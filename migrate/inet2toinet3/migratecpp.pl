@@ -66,8 +66,17 @@ while (<LISTFILE>)
     $txt =~ s/\bNotificationBoard\b/cModule/mg;
     $txt =~ s/\bNotificationBoardAccess\(\)\.getIfExists\(\)/findContainingNode(this)/mg;
     $txt =~ s/\bNotificationBoardAccess\(\)\.get\(\)/getContainingNode(this)/mg;
-    $txt =~ s/\bsubscribe\(this, (NF_[A-Za-z0-9_])\b/subscribe($1, this)/mg;
+    $txt =~ s/\bsubscribe\(this, *(NF_[A-Za-z0-9_])\)/subscribe($1, this)/mg;
+    $txt =~ s/\bequals\(/operator==(/mg;
+    $txt =~ s/\bev( +)/EV$1/mg;
 
+#BasicModule ???
+
+    # InterfaceTableAccess
+    $txt =~ s/#include <InterfaceTableAccess\.h>/#include <inet\/common\/ModuleAccess.h>/mg;
+    $txt =~ s/#include "InterfaceTableAccess\.h"/#include "inet\/common\/ModuleAccess.h"/mg;
+    $txt =~ s/\bInterfaceTableAccess\(\)\.get\(this\)/getModuleFromPar<IInterfaceTable>(par("interfaceTableModule"), this)/mg;
+    $txt =~ s/\bInterfaceTableAccess\(\)\.get\(\)/getModuleFromPar<IInterfaceTable>(par("interfaceTableModule"), this)/mg;
 
     # do parameter and gate renamings
     foreach my $from (keys(%renamedParamsAndGates)) {
