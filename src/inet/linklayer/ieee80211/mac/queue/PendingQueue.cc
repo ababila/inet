@@ -22,87 +22,17 @@ namespace inet {
 namespace ieee80211 {
 
 Define_Module(PendingQueue);
-
-simsignal_t PendingQueue::packetEnqueuedSignal = cComponent::registerSignal("packetEnqueued");
-simsignal_t PendingQueue::packetDequeuedSignal = cComponent::registerSignal("packetDequeued");
+Define_Module(PendingQueueClassifier);
 
 void PendingQueue::initialize(int stage)
 {
+    DropTailQueue::initialize(stage);
     if (stage == INITSTAGE_LOCAL) {
         if (par("prioritizeMulticast"))
             queue.setup((CompareFunc)cmpMgmtOverMulticastOverUnicast);
         else
             queue.setup((CompareFunc)cmpMgmtOverData);
-        maxQueueSize = par("maxQueueSize");
-        updateDisplayString();
     }
-}
-
-void PendingQueue::updateDisplayString()
-{
-    std::string text = std::to_string(queue.getLength()) + " packets";
-    getDisplayString().setTagArg("t", 0, text.c_str());
-}
-
-bool PendingQueue::insert(Packet *frame)
-{
-    if (maxQueueSize != -1 && queue.getLength() == maxQueueSize)
-        return false;
-    queue.insert(frame);
-    updateDisplayString();
-    emit(packetEnqueuedSignal, frame);
-    return true;
-}
-
-bool PendingQueue::insertBefore(Packet *where, Packet *frame)
-{
-    if (maxQueueSize != -1 && queue.getLength() == maxQueueSize)
-        return false;
-    queue.insertBefore(where, frame);
-    updateDisplayString();
-    emit(packetEnqueuedSignal, frame);
-    return true;
-}
-
-bool PendingQueue::insertAfter(Packet *where, Packet *frame)
-{
-    if (maxQueueSize != -1 && queue.getLength() == maxQueueSize)
-        return false;
-    queue.insertAfter(where, frame);
-    updateDisplayString();
-    emit(packetEnqueuedSignal, frame);
-    return true;
-}
-
-Packet *PendingQueue::remove(Packet *frame)
-{
-    auto packet = check_and_cast<Packet *>(queue.remove(frame));
-    updateDisplayString();
-    emit(packetDequeuedSignal, packet);
-    return packet;
-}
-
-Packet *PendingQueue::pop()
-{
-    auto packet = check_and_cast<Packet *>(queue.pop());
-    updateDisplayString();
-    emit(packetDequeuedSignal, packet);
-    return packet;
-}
-
-Packet *PendingQueue::front() const
-{
-    return check_and_cast<Packet *>(queue.front());
-}
-
-Packet *PendingQueue::back() const
-{
-    return check_and_cast<Packet *>(queue.back());
-}
-
-bool PendingQueue::contains(Packet *frame) const
-{
-    return queue.contains(frame);
 }
 
 int PendingQueue::cmpMgmtOverData(Packet *a, Packet *b)
@@ -119,6 +49,17 @@ int PendingQueue::cmpMgmtOverMulticastOverUnicast(Packet *a, Packet *b)
     int aPri = dynamicPtrCast<const Ieee80211MgmtHeader>(aHeader) ? 2 : aHeader->getReceiverAddress().isMulticast() ? 1 : 0;
     int bPri = dynamicPtrCast<const Ieee80211MgmtHeader>(bHeader) ? 2 : bHeader->getReceiverAddress().isMulticast() ? 1 : 0;
     return bPri - aPri;
+}
+
+int PendingQueueClassifier::classifyPacket(Packet *packet) const
+{
+    const auto& header = packet->peekAtFront<Ieee80211MacHeader>();
+    if (dynamicPtrCast<const Ieee80211MgmtHeader>(header))
+        return 0;
+    else if (par("prioritizeMulticast") && header->getReceiverAddress().isMulticast())
+        return 1;
+    else
+        return 2;
 }
 
 } /* namespace inet */

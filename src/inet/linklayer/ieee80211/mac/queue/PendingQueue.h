@@ -18,57 +18,26 @@
 #ifndef __INET_PENDINGQUEUE_H
 #define __INET_PENDINGQUEUE_H
 
-#include "inet/common/packet/Packet.h"
+#include "inet/common/newqueue/ClassifierBase.h"
+#include "inet/common/newqueue/DropTailQueue.h"
 
 namespace inet {
 namespace ieee80211 {
 
-// TODO: eventually replace this class with IPassiveQueue or a more generic queue interface
-class PendingQueue : public cSimpleModule
+class INET_API PendingQueue : public inet::queue::DropTailQueue
 {
-    public:
-        static simsignal_t packetEnqueuedSignal;
-        static simsignal_t packetDequeuedSignal;
-
-    public:
-        enum class Priority {
-            PRIORITIZE_MGMT_OVER_DATA,
-            PRIORITIZE_MULTICAST_OVER_DATA
-        };
-
-    protected:
-        cQueue queue;
-        int maxQueueSize = -1; // -1 means unlimited queue
-
     protected:
         virtual void initialize(int stage) override;
-        virtual void updateDisplayString();
-
-    public:
-        virtual ~PendingQueue() { }
-
-        virtual cQueue *getQueue() { return &queue; } // TODO: KLUDGE
-
-        virtual bool isEmpty() const { return queue.isEmpty(); }
-
-        virtual bool insert(Packet *frame);
-        virtual bool insertBefore(Packet *where, Packet *frame);
-        virtual bool insertAfter(Packet *where, Packet *frame);
-
-        virtual Packet *remove(Packet *frame);
-        virtual Packet *pop();
-
-        virtual Packet *front() const;
-        virtual Packet *back() const;
-
-        virtual bool contains(Packet *frame) const;
-
-        int getNumberOfFrames() { return queue.getLength(); }
-        int getMaxQueueSize() { return maxQueueSize; }
 
     public:
         static int cmpMgmtOverData(Packet *a, Packet *b);
         static int cmpMgmtOverMulticastOverUnicast(Packet *a, Packet *b);
+};
+
+class INET_API PendingQueueClassifier : public inet::queue::ClassifierBase
+{
+    protected:
+        virtual int classifyPacket(Packet *packet) const;
 };
 
 } /* namespace ieee80211 */
