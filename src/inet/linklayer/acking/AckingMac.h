@@ -21,6 +21,7 @@
 #define __INET_ACKINGMAC_H
 
 #include "inet/common/INETDefs.h"
+#include "inet/common/newqueue/IPacketQueue.h"
 #include "inet/linklayer/base/MacProtocolBase.h"
 #include "inet/linklayer/common/MacAddress.h"
 #include "inet/physicallayer/contract/packetlevel/IRadio.h"
@@ -29,7 +30,6 @@ namespace inet {
 
 class AckingMacHeader;
 class InterfaceEntry;
-class IPassiveQueue;
 
 /**
  * Implements a simplified ideal MAC.
@@ -48,7 +48,7 @@ class INET_API AckingMac : public MacProtocolBase
 
     physicallayer::IRadio *radio = nullptr;
     physicallayer::IRadio::TransmissionState transmissionState = physicallayer::IRadio::TRANSMISSION_STATE_UNDEFINED;
-    IPassiveQueue *queueModule = nullptr;
+    inet::queue::IPacketQueue *queueModule = nullptr;
 
     int outStandingRequests = 0;
     Packet *lastSentPk = nullptr;

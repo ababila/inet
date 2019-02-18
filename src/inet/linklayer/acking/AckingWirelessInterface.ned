@@ -19,7 +19,7 @@
 
 package inet.linklayer.acking;
 
-import inet.common.queue.IOutputQueue;
+import inet.common.newqueue.IPacketQueue;
 import inet.linklayer.contract.IWirelessInterface;
 import inet.networklayer.common.InterfaceEntry;
 import inet.physicallayer.contract.packetlevel.IRadio;
@@ -53,7 +53,7 @@ module AckingWirelessInterface extends InterfaceEntry like IWirelessInterface
         output upperLayerOut;
         input radioIn @labels(Signal);
     submodules:
-        queue: <default("DropTailQueue")> like IOutputQueue {
+        queue: <default("DropTailQueue")> like IPacketQueue {
             parameters:
                 @display("p=100,100;q=l2queue");
         }

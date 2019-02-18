@@ -25,7 +25,6 @@
 #include "inet/common/ProtocolGroup.h"
 #include "inet/common/ProtocolTag_m.h"
 #include "inet/common/packet/Packet.h"
-#include "inet/common/queue/IPassiveQueue.h"
 #include "inet/linklayer/acking/AckingMac.h"
 #include "inet/linklayer/acking/AckingMacHeader_m.h"
 #include "inet/linklayer/common/InterfaceTag_m.h"
@@ -52,19 +51,19 @@ void AckingMac::flushQueue()
 {
     ASSERT(queueModule);
     while (!queueModule->isEmpty()) {
-        cMessage *msg = queueModule->pop();
+        cMessage *msg = queueModule->popPacket();
         PacketDropDetails details;
         details.setReason(INTERFACE_DOWN);
         emit(packetDroppedSignal, msg, &details);
         delete msg;
     }
-    queueModule->clear();    // clear request count
 }
 
 void AckingMac::clearQueue()
 {
     ASSERT(queueModule);
-    queueModule->clear();
+    while (!queueModule->isEmpty())
+        delete queueModule->popPacket();
 }
 
 void AckingMac::initialize(int stage)
@@ -87,7 +86,7 @@ void AckingMac::initialize(int stage)
 
         // find queueModule
         cGate *queueOut = gate("upperLayerIn")->getPathStartGate();
-        queueModule = dynamic_cast<IPassiveQueue *>(queueOut->getOwnerModule());
+        queueModule = dynamic_cast<inet::queue::IPacketQueue *>(queueOut->getOwnerModule());
         if (queueModule == nullptr)
             throw cRuntimeError("External queue required for AckingMac module");
 
@@ -157,7 +156,6 @@ void AckingMac::startTransmitting(Packet *msg)
 
 void AckingMac::getNextMsgFromHL()
 {
-    ASSERT(outStandingRequests >= queueModule->getNumPendingRequests());
     if (outStandingRequests == 0) {
         queueModule->requestPacket();
         outStandingRequests++;
