@@ -70,6 +70,15 @@ while (<LISTFILE>)
     $txt =~ s/\bequals\(/operator==(/mg;
     $txt =~ s/\bev( +)/EV$1/mg;
 
+    # override
+    $txt =~ s/\b(int +numInitStages\(\) +const);/$1 override;/mg;
+    $txt =~ s/\b(int +numInitStages\(\) +const)(\s*\{)/$1 override$2/mg;
+    $txt =~ s/\b(void +initialize\(\));/$1 override;/mg;
+    $txt =~ s/\b(void +initialize\(int +stage\));/$1 override;/mg;
+    $txt =~ s/\b(void +handleMessage\(cMessage *\* *msg\));/$1 override;/mg;
+    $txt =~ s/\b(void +finish\(\));/$1 override;/mg;
+
+
 #BasicModule ???
 
     # InterfaceTableAccess
