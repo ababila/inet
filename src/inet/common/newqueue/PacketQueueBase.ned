@@ -17,12 +17,9 @@
 
 package inet.common.newqueue;
 
-simple Prioritizer extends PacketQueueBase
+simple PacketQueueBase
 {
     parameters:
-        @class(queue::Prioritizer);
-        @display("i=block/join");
-    gates:
-        input in[] @labels(pull);
-        output out @labels(pull);
+        bool asynchronous = default(false);
+        @display("i=block/queue");
 }

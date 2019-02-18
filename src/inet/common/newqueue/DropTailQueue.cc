@@ -26,13 +26,17 @@ Define_Module(DropTailQueue);
 void DropTailQueue::initialize(int stage)
 {
     InfiniteQueue::initialize(stage);
-    if (stage == INITSTAGE_LOCAL)
+    if (stage == INITSTAGE_LOCAL) {
         frameCapacity = par("frameCapacity");
+        byteCapacity = par("byteCapacity");
+    }
 }
 
 void DropTailQueue::pushPacket(Packet *packet)
 {
-    if (frameCapacity != -1 && queue.getLength() >= frameCapacity) {
+    if ((frameCapacity != -1 && queue.getLength() + 1 > frameCapacity) ||
+        (byteCapacity != -1 && queue.getByteLength() + packet->getByteLength() > byteCapacity))
+    {
         EV_INFO << "Dropping packet " << packet->getName() << " because the queue is full." << endl;
         PacketDropDetails details;
         details.setReason(QUEUE_OVERFLOW);

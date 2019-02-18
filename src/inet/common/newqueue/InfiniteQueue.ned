@@ -17,17 +17,14 @@
 
 package inet.common.newqueue;
 
-simple InfiniteQueue like IPacketQueue
+simple InfiniteQueue extends PacketQueueBase like IPacketQueue
 {
     parameters:
         @class(queue::InfiniteQueue);
-        @display("i=block/queue");
         @signal[packetEnqueued](type=inet::Packet);
         @signal[packetDequeued](type=inet::Packet);
-        @signal[packetDropped](type=inet::Packet);
         @statistic[queueingTime](title="queueing times"; source=queueingTime(packetDequeued); record=histogram,vector; unit=s; interpolationmode=none);
         @statistic[queueLength](title="queue length"; source=count(packetEnqueued) - count(packetDequeued); record=max,timeavg,vector; interpolationmode=sample-hold);
-        @statistic[packetDropQueueOverflow](title="packet drops: queue overflow"; source=packetDropReasonIsQueueOverflow(packetDropped); record=count,sum(packetBytes),vector(packetBytes); interpolationmode=none);
     gates:
         input in @labels(push);
         output out @labels(pull);

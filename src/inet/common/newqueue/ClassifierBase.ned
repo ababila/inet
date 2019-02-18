@@ -17,7 +17,7 @@
 
 package inet.common.newqueue;
 
-simple ClassifierBase
+simple ClassifierBase extends PacketQueueBase
 {
     parameters:
         @display("i=block/fork");

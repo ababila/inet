@@ -20,6 +20,13 @@
 namespace inet {
 namespace queue {
 
+void PacketQueueBase::initialize(int stage)
+{
+    cSimpleModule::initialize(stage);
+    if (stage == INITSTAGE_LOCAL)
+        asynchronous = par("asynchronous");
+}
+
 void PacketQueueBase::handleMessage(cMessage *msg)
 {
     pushPacket(check_and_cast<Packet *>(msg));

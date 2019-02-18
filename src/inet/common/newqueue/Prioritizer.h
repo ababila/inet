@@ -30,8 +30,12 @@ class INET_API Prioritizer : public PacketQueueBase, public cListener
     std::vector<IPacketQueue *> inputQueues;
 
   protected:
-    virtual void initialize() override;
+    virtual void initialize(int stage) override;
     virtual void finish() override;
+    virtual void handlePendingRequestPacket() override;
+
+    virtual void subscribe();
+    virtual void unsubscribe();
 
   public:
     virtual int getNumPackets() override;

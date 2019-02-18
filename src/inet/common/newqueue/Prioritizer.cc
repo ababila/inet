@@ -22,19 +22,34 @@ namespace queue {
 
 Define_Module(Prioritizer);
 
-void Prioritizer::initialize()
+void Prioritizer::initialize(int stage)
 {
-    for (int i = 0; i < gateSize("in"); i++) {
-        auto inputGate = gate("in", i);
-        auto inputQueue = check_and_cast<IPacketQueue *>(inputGate->getPathStartGate()->getOwnerModule());
-        inputGates.push_back(inputGate);
-        inputQueues.push_back(inputQueue);
+    PacketQueueBase::initialize(stage);
+    if (stage == INITSTAGE_LOCAL) {
+        for (int i = 0; i < gateSize("in"); i++) {
+            auto inputGate = gate("in", i);
+            auto inputQueue = check_and_cast<IPacketQueue *>(inputGate->getPathStartGate()->getOwnerModule());
+            inputGates.push_back(inputGate);
+            inputQueues.push_back(inputQueue);
+        }
+        subscribe();
+    }
+}
+
+void Prioritizer::finish()
+{
+    unsubscribe();
+}
+
+void Prioritizer::subscribe()
+{
+    for (auto inputQueue : inputQueues) {
         auto inputQueueModule = check_and_cast<cModule *>(inputQueue);
         inputQueueModule->subscribe(IPacketQueue::packetEnqueuedSignal, this);
     }
 }
 
-void Prioritizer::finish()
+void Prioritizer::unsubscribe()
 {
     for (auto inputQueue : inputQueues) {
         auto inputQueueModule = check_and_cast<cModule *>(inputQueue);
@@ -42,18 +57,33 @@ void Prioritizer::finish()
     }
 }
 
+void Prioritizer::handlePendingRequestPacket()
+{
+    if (asynchronous) {
+        Enter_Method_Silent();
+        for (auto queue : inputQueues) {
+            if (!queue->isEmpty()) {
+                queue->requestPacket();
+                hasPendingRequestPacket = false;
+                break;
+            }
+        }
+    }
+    else
+        PacketQueueBase::handlePendingRequestPacket();
+}
+
 int Prioritizer::getNumPackets()
 {
     int size = 0;
-    for (int i = 0; i < gateSize("in"); i++)
-        size += inputQueues[i]->getNumPackets();
+    for (auto queue : inputQueues)
+        size += queue->getNumPackets();
     return size;
 }
 
 Packet *Prioritizer::getPacket(int index)
 {
-    for (int i = 0; i < gateSize("in"); i++) {
-        auto queue = inputQueues[i];
+    for (auto queue : inputQueues) {
         auto numPackets = queue->getNumPackets();
         if (index < numPackets)
             return queue->getPacket(index);
@@ -65,12 +95,21 @@ Packet *Prioritizer::getPacket(int index)
 
 void Prioritizer::pushPacket(Packet *packet)
 {
-    throw cRuntimeError("Invalid operation");
+    auto senderQueue = check_and_cast<IPacketQueue *>(packet->getSenderModule());
+    for (auto queue : inputQueues) {
+        if (!queue->isEmpty()) {
+            if (senderQueue != queue)
+                throw cRuntimeError("Illegal operation");
+            else
+                break;
+        }
+    }
+    send(packet, "out");
 }
 
 Packet *Prioritizer::popPacket()
 {
-    for (int i = 0; i < gateSize("in"); i++) {
+    for (int i = 0; i < (int)inputQueues.size(); i++) {
         auto queue = inputQueues[i];
         if (!queue->isEmpty()) {
             auto packet = queue->popPacket();
@@ -83,8 +122,7 @@ Packet *Prioritizer::popPacket()
 
 void Prioritizer::removePacket(Packet *packet)
 {
-    for (int i = 0; i < gateSize("in"); i++) {
-        auto queue = inputQueues[i];
+    for (auto queue : inputQueues) {
         for (int j = 0; j < queue->getNumPackets(); j++) {
             if (queue->getPacket(j) == packet) {
                 queue->removePacket(packet);

@@ -27,9 +27,11 @@ namespace queue {
 class INET_API PacketQueueBase : public cSimpleModule, public IPacketQueue
 {
   protected:
+    bool asynchronous = false;
     bool hasPendingRequestPacket = false;
 
   protected:
+    virtual void initialize(int stage) override;
     virtual void handleMessage(cMessage *msg) override;
     virtual void handlePendingRequestPacket();
     virtual void animateSend(Packet *packet, cGate *gate);

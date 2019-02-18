@@ -27,6 +27,7 @@ class INET_API DropTailQueue : public InfiniteQueue
 {
   protected:
     int frameCapacity = -1;
+    int byteCapacity = -1;
 
   protected:
     virtual void initialize(int stage) override;
