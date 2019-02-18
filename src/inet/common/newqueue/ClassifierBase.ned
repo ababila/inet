@@ -20,7 +20,7 @@ package inet.common.newqueue;
 simple ClassifierBase extends PacketQueueBase
 {
     parameters:
-        @display("i=block/fork");
+        @display("i=block/classifier");
     gates:
         input in @labels(push);
         output out[] @labels(push);

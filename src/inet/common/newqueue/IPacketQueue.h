@@ -62,6 +62,8 @@ class INET_API IPacketQueue
     static simsignal_t packetDequeuedSignal;
 
   public:
+    virtual ~IPacketQueue() {}
+
     /**
      * Returns the number of available packets in the queue.
      */
