@@ -52,7 +52,6 @@ moduleinterface IEtherMac
         bool duplexMode;        // selects full-duplex (true) or half-duplex (false) operation
         int txQueueLimit;       // maximum number of frames queued up for transmission;
                                 // additional frames are dropped. Only used if queueModule==""
-        string queueModule;     // name of optional external queue module
         int mtu @unit(B);
         @display("i=block/rxtx");
     gates:

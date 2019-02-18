@@ -54,14 +54,9 @@ module EthernetInterface extends InterfaceEntry like IEthernetInterface
         egressTC: <default("")> like ITrafficConditioner if typename != "" {
             @display("p=100,100");
         }
-        queue: <default("")> like IPacketQueue if typename != "" {
-            parameters:
-                @display("p=150,400;q=l2queue");
-        }
         mac: <default(csmacdSupport ? "EtherMac" : "EtherMacFullDuplex")> like IEtherMac {
             parameters:
-                queueModule = (exists(queue) ? "^.queue" : "");
-                txQueueLimit = (exists(queue) ? 1 : 10000); // queue sends one packet at a time
+                txQueueLimit = 10000; // queue sends one packet at a time
                 @display("p=250,500");
         }
         encap: <default("EtherEncap")> like IEtherEncap {
@@ -76,15 +71,11 @@ module EthernetInterface extends InterfaceEntry like IEthernetInterface
         mac.upperLayerOut --> qEncap.lowerLayerIn if exists(qEncap);
         mac.upperLayerOut --> encap.lowerLayerIn if !exists(qEncap);
 
-        mac.upperLayerIn <-- queue.out if exists(queue);
-        mac.upperLayerIn <-- qEncap.lowerLayerOut if !exists(queue) && exists(qEncap);
-        mac.upperLayerIn <-- encap.lowerLayerOut if !exists(queue) && !exists(qEncap);
+        mac.upperLayerIn <-- qEncap.lowerLayerOut if exists(qEncap);
+        mac.upperLayerIn <-- encap.lowerLayerOut if !exists(qEncap);
 
         encap.lowerLayerOut --> qEncap.upperLayerIn if exists(qEncap);
         encap.lowerLayerIn <-- qEncap.upperLayerOut if exists(qEncap);
-
-        qEncap.lowerLayerOut --> queue.in if exists(qEncap) && exists(queue);
-        encap.lowerLayerOut --> queue.in if !exists(qEncap) && exists(queue);
 
         mac.phys <--> { @display("m=s"); } <--> phys;
 

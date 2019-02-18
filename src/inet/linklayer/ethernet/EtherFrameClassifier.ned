@@ -18,6 +18,8 @@
 
 package inet.linklayer.ethernet;
 
+import inet.common.newqueue.ClassifierBase;
+
 //
 // Simple classifier, that forwards EtherPauseFrames
 // to the pauseOut gates, and other frames to the defaultOut
@@ -26,13 +28,10 @@ package inet.linklayer.ethernet;
 // This component can be used to build a QoS queue that gives
 // the pause frames the highest priority.
 //
-simple EtherFrameClassifier
+simple EtherFrameClassifier extends ClassifierBase
 {
     parameters:
+        @class(EtherFrameClassifier);
         @display("i=block/classifier");
-    gates:
-        input in;
-        output pauseOut;
-        output defaultOut;
 }
 

@@ -18,6 +18,7 @@
 
 package inet.linklayer.ethernet;
 
+import inet.common.newqueue.IPacketQueue;
 import inet.linklayer.contract.IEtherMac;
 
 //
@@ -114,7 +115,7 @@ import inet.linklayer.contract.IEtherMac;
 // @see ~EtherMac, ~EthernetInterface, ~IOutputQueue, ~EtherEncap, ~Ieee8022Llc
 // @see ~EtherFrame, ~EthernetIIFrame, ~EtherFrameWithLlc, ~Ieee802Ctrl
 //
-simple EtherMacFullDuplex like IEtherMac
+module EtherMacFullDuplex like IEtherMac
 {
     parameters:
         string interfaceTableModule;        // The path to the InterfaceTable module
@@ -125,11 +126,11 @@ simple EtherMacFullDuplex like IEtherMac
                                             // (parameter is present to reduce the risk of accidental misconfiguration)
         int txQueueLimit = default(1000);   // maximum number of frames queued up for transmission in the internal queue
                                             // (only used if queueModule==""); additional frames cause a runtime error
-        string queueModule = default("");   // name of optional external queue module
         int mtu @unit(B) = default(1500B);
         @lifecycleSupport;
         double stopOperationExtraTime @unit(s) = default(-1s);    // extra time after lifecycle stop operation finished
         double stopOperationTimeout @unit(s) = default(2s);    // timeout value for lifecycle stop operation
+        @class(EtherMacFullDuplex);
         @display("i=block/rxtx");
 
         @signal[txPk](type=inet::Packet);
@@ -159,5 +160,11 @@ simple EtherMacFullDuplex like IEtherMac
         input upperLayerIn @labels(EtherFrame);    // to ~EtherEncap or ~IMacRelayUnit
         output upperLayerOut @labels(EtherFrame);  // to ~EtherEncap or ~IMacRelayUnit
         inout phys @labels(EtherFrame);            // to physical layer or the network
+    submodules:
+        queue: <default("DropTailQueue")> like IPacketQueue if typename != "" {
+            parameters:
+                frameCapacity = default(txQueueLimit);
+        }
+    connections allowunconnected:
 }
 

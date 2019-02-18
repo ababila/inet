@@ -18,6 +18,7 @@
 
 package inet.linklayer.ethernet;
 
+import inet.common.newqueue.IPacketQueue;
 import inet.linklayer.contract.IEtherMac;
 
 //
@@ -105,7 +106,7 @@ import inet.linklayer.contract.IEtherMac;
 // @see ~EtherMacFullDuplex, ~EthernetInterface, ~IOutputQueue, ~EtherEncap, ~Ieee8022Llc
 // @see ~EtherFrame, ~EthernetIIFrame, ~EtherFrameWithLlc, ~Ieee802Ctrl
 //
-simple EtherMac like IEtherMac
+module EtherMac like IEtherMac
 {
     parameters:
         string interfaceTableModule;   // The path to the InterfaceTable module
@@ -120,6 +121,7 @@ simple EtherMac like IEtherMac
         @lifecycleSupport;
         double stopOperationExtraTime @unit(s) = default(-1s);    // extra time after lifecycle stop operation finished
         double stopOperationTimeout @unit(s) = default(2s);    // timeout value for lifecycle stop operation
+        @class(EtherMac);
         @display("i=block/rxtx");
 
         @signal[rxPkOk](type=inet::Packet);
@@ -151,5 +153,11 @@ simple EtherMac like IEtherMac
         input upperLayerIn @labels(EtherFrame);    // to ~EtherEncap or ~IMacRelayUnit
         output upperLayerOut @labels(EtherFrame);  // to ~EtherEncap or ~IMacRelayUnit
         inout phys @labels(EtherFrame); // to physical layer or the network
+    submodules:
+        queue: <default("DropTailQueue")> like IPacketQueue if typename != "" {
+            parameters:
+                frameCapacity = default(txQueueLimit);
+        }
+    connections allowunconnected:
 }
 
