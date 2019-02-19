@@ -164,6 +164,7 @@ module EtherMacFullDuplex like IEtherMac
         queue: <default("DropTailQueue")> like IPacketQueue if typename != "" {
             parameters:
                 frameCapacity = default(txQueueLimit);
+                @display("p=100,100");
         }
     connections allowunconnected:
 }
