@@ -40,7 +40,6 @@ simsignal_t Ppp::rxPkOkSignal = registerSignal("rxPkOk");
 Ppp::~Ppp()
 {
     cancelAndDelete(endTransmissionEvent);
-    delete queueAccessor;
 }
 
 void Ppp::initialize(int stage)
@@ -66,10 +65,7 @@ void Ppp::initialize(int stage)
         subscribe(POST_MODEL_CHANGE, this);
         emit(transmissionStateChangedSignal, 0L);
 
-        queueAccessor = new inet::queue::QueueAccessor(getSubmodule("queue"), gate("upperLayerIn"), this);
-    }
-    else if (stage == INITSTAGE_LINK_LAYER) {
-        queueAccessor->startDequeingPacket();
+        queue = check_and_cast<inet::queue::IPacketQueue *>(getSubmodule("queue"));
     }
 }
 
@@ -149,8 +145,8 @@ void Ppp::refreshOutGateConnection(bool connected)
         interfaceEntry->setDatarate(datarate);
     }
 
-    if (connected)
-        queueAccessor->startDequeingPacket();
+    if (connected && !endTransmissionEvent->isScheduled() && !queue->isEmpty())
+        startTransmitting(queue->popPacket());
 }
 
 void Ppp::startTransmitting(Packet *msg)
@@ -188,7 +184,7 @@ void Ppp::handleMessageWhenUp(cMessage *message)
 {
     MacBase::handleMessageWhenUp(message);
     if (operationalState == State::STOPPING_OPERATION) {
-        if (queueAccessor->getQueue()->isEmpty()) {
+        if (queue->isEmpty()) {
             interfaceEntry->setCarrier(false);
             interfaceEntry->setState(InterfaceEntry::State::DOWN);
             startActiveOperationExtraTimeOrFinish(par("stopOperationExtraTime"));
@@ -202,7 +198,8 @@ void Ppp::handleSelfMessage(cMessage *message)
         // Transmission finished, we can start next one.
         EV_INFO << "Transmission successfully completed.\n";
         emit(transmissionStateChangedSignal, 0L);
-        queueAccessor->startDequeingPacket();
+        if (!queue->isEmpty())
+            startTransmitting(queue->popPacket());
     }
     else
         throw cRuntimeError("Unknown self message");
@@ -219,9 +216,12 @@ void Ppp::handleUpperPacket(Packet *packet)
         emit(packetDroppedSignal, packet, &details);
         delete packet;
     }
+    else if (!endTransmissionEvent->isScheduled() && !queue->isEmpty())
+        startTransmitting(queue->popPacket());
     else
-        queueAccessor->handlePacket(packet);
+        queue->pushPacket(packet);
 }
+//return !endTransmissionEvent->isScheduled();
 
 void Ppp::handleLowerPacket(Packet *packet)
 {
@@ -280,7 +280,7 @@ void Ppp::refreshDisplay() const
             buf << "\nerr:" << numBitErr;
 
         if (endTransmissionEvent->isScheduled()) {
-            color = queueAccessor->getQueue()->getNumPackets() >= 3 ? "red" : "yellow";
+            color = queue->getNumPackets() >= 3 ? "red" : "yellow";
         }
     }
     else {
@@ -321,7 +321,6 @@ cPacket *Ppp::decapsulate(Packet *packet)
 void Ppp::flushQueue()
 {
     // code would look slightly nicer with a pop() function that returns nullptr if empty
-    auto queue = queueAccessor->getQueue();
     while (!queue->isEmpty()) {
         auto packet = queue->popPacket();
         PacketDropDetails details;
@@ -329,30 +328,17 @@ void Ppp::flushQueue()
         emit(packetDroppedSignal, packet, &details); //FIXME this signal lumps together packets from the network and packets from higher layers! separate them
         delete packet;
     }
-    queueAccessor->startDequeingPacket();
 }
 
 void Ppp::clearQueue()
 {
-    auto queue = queueAccessor->getQueue();
     while (!queue->isEmpty())
         delete queue->popPacket();
-    queueAccessor->startDequeingPacket();
-}
-
-bool Ppp::isDequeingPacketEnabled()
-{
-    return !endTransmissionEvent->isScheduled();
-}
-
-void Ppp::processDequedPacket(Packet *packet)
-{
-    startTransmitting(packet);
 }
 
 void Ppp::handleStopOperation(LifecycleOperation *operation)
 {
-    if (!queueAccessor->getQueue()->isEmpty()) {
+    if (!queue->isEmpty()) {
         interfaceEntry->setState(InterfaceEntry::State::GOING_DOWN);
         delayActiveOperationFinish(par("stopOperationTimeout"));
     }

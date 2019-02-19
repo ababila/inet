@@ -19,7 +19,7 @@
 #define __INET_PPP_H
 
 #include "inet/common/INETDefs.h"
-#include "inet/common/newqueue/QueueAccessor.h"
+#include "inet/common/newqueue/IPacketQueue.h"
 #include "inet/common/lifecycle/ILifecycle.h"
 #include "inet/common/lifecycle/NodeStatus.h"
 #include "inet/common/packet/Packet.h"
@@ -33,7 +33,7 @@ class InterfaceEntry;
 /**
  * PPP implementation.
  */
-class INET_API Ppp : public MacBase, public inet::queue::QueueAccessor::ICallback
+class INET_API Ppp : public MacBase
 {
   protected:
     bool sendRawBytes = false;
@@ -41,7 +41,7 @@ class INET_API Ppp : public MacBase, public inet::queue::QueueAccessor::ICallbac
     cChannel *datarateChannel = nullptr;    // nullptr if we're not connected
 
     cMessage *endTransmissionEvent = nullptr;
-    inet::queue::QueueAccessor *queueAccessor = nullptr;
+    inet::queue::IPacketQueue *queue = nullptr;
 
     std::string oldConnColor;
 
@@ -68,10 +68,6 @@ class INET_API Ppp : public MacBase, public inet::queue::QueueAccessor::ICallbac
     virtual void configureInterfaceEntry() override;
     virtual void flushQueue() override;
     virtual void clearQueue() override;
-
-    // QueueAccessor::ICallback functions
-    virtual bool isDequeingPacketEnabled() override;
-    virtual void processDequedPacket(Packet *packet) override;
 
   public:
     virtual ~Ppp();

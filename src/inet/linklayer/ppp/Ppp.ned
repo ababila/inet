@@ -78,6 +78,8 @@ module Ppp
         queue: <default("DropTailQueue")> like IPacketQueue if typename != "" {
             parameters:
                 frameCapacity = default(txQueueLimit);
+                @display("p=100,100;q=l2queue");
         }
+    connections allowunconnected:
 }
 
