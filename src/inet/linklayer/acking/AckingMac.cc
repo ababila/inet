@@ -84,12 +84,7 @@ void AckingMac::initialize(int stage)
         radio = check_and_cast<IRadio *>(radioModule);
         transmissionState = IRadio::TRANSMISSION_STATE_UNDEFINED;
 
-        // find queueModule
-        cGate *queueOut = gate("upperLayerIn")->getPathStartGate();
-        queueModule = dynamic_cast<inet::queue::IPacketQueue *>(queueOut->getOwnerModule());
-        if (queueModule == nullptr)
-            throw cRuntimeError("External queue required for AckingMac module");
-
+        queueModule = check_and_cast<inet::queue::IPacketQueue *>(getSubmodule("queue"));
     }
     else if (stage == INITSTAGE_LINK_LAYER) {
         radio->setRadioMode(fullDuplex ? IRadio::RADIO_MODE_TRANSCEIVER : IRadio::RADIO_MODE_RECEIVER);
