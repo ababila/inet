@@ -26,6 +26,6 @@ simple InfiniteQueue extends PacketQueueBase like IPacketQueue
         @statistic[queueingTime](title="queueing times"; source=queueingTime(packetDequeued); record=histogram,vector; unit=s; interpolationmode=none);
         @statistic[queueLength](title="queue length"; source=count(packetEnqueued) - count(packetDequeued); record=max,timeavg,vector; interpolationmode=sample-hold);
     gates:
-        input in @labels(push);
-        output out @labels(pull);
+        input in;
+        output out;
 }

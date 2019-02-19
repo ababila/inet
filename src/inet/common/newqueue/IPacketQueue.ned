@@ -22,6 +22,6 @@ moduleinterface IPacketQueue
     parameters:
         @display("i=block/queue");
     gates:
-        input in @labels(push,pull);
-        output out @labels(push,pull);
+        input in;
+        output out;
 }

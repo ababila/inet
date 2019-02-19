@@ -26,6 +26,6 @@ module CompoundQueue like IPacketQueue
         @signal[packetDropped](type=inet::Packet);
         @statistic[packetDropQueueOverflow](title="packet drops: queue overflow"; source=packetDropReasonIsQueueOverflow(packetDropped); record=count,sum(packetBytes),vector(packetBytes); interpolationmode=none);
     gates:
-        input in @labels(push,pull);
-        output out @labels(push,pull);
+        input in;
+        output out;
 }

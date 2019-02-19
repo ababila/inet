@@ -1,5 +1,5 @@
 //
-// Copyright (C) OpenSim Ltd.
+// Copyright (C) 2004 Andras Varga
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public License
@@ -12,17 +12,21 @@
 // GNU Lesser General Public License for more details.
 //
 // You should have received a copy of the GNU Lesser General Public License
-// along with this program; if not, see http://www.gnu.org/licenses/.
+// along with this program; if not, see <http://www.gnu.org/licenses/>.
 //
 
 package inet.common.newqueue;
 
-simple Prioritizer extends PacketQueueBase
+//
+// Silently discards all received packets.
+//
+simple Sink
 {
     parameters:
-        @class(queue::Prioritizer);
-        @display("i=block/join");
+        @display("i=block/sink");
+        @signal[packetReceived](type=cPacket);
+        @statistic[packetReceived](title="packets received"; source=packetReceived; record=count,"sum(packetBytes)","vector(packetBytes)"; interpolationmode=none);
     gates:
         input in[];
-        output out;
 }
+

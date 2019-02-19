@@ -17,7 +17,7 @@
 
 package inet.common.newqueue;
 
-simple DropTailQueue extends InfiniteQueue like IPacketQueue
+simple DropTailQueue extends InfiniteQueue
 {
     parameters:
         int frameCapacity = default(100);

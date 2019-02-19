@@ -15,14 +15,34 @@
 // along with this program; if not, see http://www.gnu.org/licenses/.
 //
 
-package inet.common.newqueue;
+#ifndef __INET_SINK_H
+#define __INET_SINK_H
 
-simple Prioritizer extends PacketQueueBase
+#include "inet/common/INETDefs.h"
+
+namespace inet {
+namespace queue {
+
+/**
+ * A module that just deletes every packet it receives, and collects
+ * basic statistics (packet count, bit count, packet rate, bit rate).
+ */
+class INET_API Sink : public cSimpleModule
 {
-    parameters:
-        @class(queue::Prioritizer);
-        @display("i=block/join");
-    gates:
-        input in[];
-        output out;
-}
+  protected:
+    int numPackets;
+    long numBits;
+    double throughput;    // bit/sec
+    double packetPerSec;
+
+  protected:
+    virtual void initialize() override;
+    virtual void handleMessage(cMessage *msg) override;
+    virtual void finish() override;
+};
+
+} // namespace queue
+} // namespace inet
+
+#endif // ifndef __INET_SINK_H
+
