@@ -21,7 +21,7 @@ package inet.linklayer.ieee802154;
 module Ieee802154NarrowbandMac extends Ieee802154Mac
 {
     parameters:
-        useMACAcks = true;
+        useMACAcks = default(true);
 
         // Time needed to switch from sleep to rx.
         // TODO This is probabily wrong, since it is used to compute
