@@ -21,6 +21,7 @@ package inet.linklayer.ieee802154;
 import inet.linklayer.contract.IWirelessInterface;
 import inet.networklayer.common.InterfaceEntry;
 import inet.physicallayer.contract.packetlevel.IRadio;
+import inet.linklayer.contract.IMacProtocol;
 
 module Ieee802154NarrowbandInterface extends InterfaceEntry like IWirelessInterface
 {
@@ -36,7 +37,7 @@ module Ieee802154NarrowbandInterface extends InterfaceEntry like IWirelessInterf
         output upperLayerOut;
         input radioIn @labels(ISignal);
     submodules:
-        mac: Ieee802154NarrowbandMac {
+         mac: <default("Ieee802154NarrowbandMac")> like IMacProtocol {
             parameters:
                 @display("p=100,100");
         }
