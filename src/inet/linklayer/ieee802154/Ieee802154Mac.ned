@@ -100,6 +100,7 @@ module Ieee802154Mac extends MacProtocolBase like IMacProtocol
         @statistic[packetDropQueueOverflow](title="packet drop: queue overflow"; source=packetDropReasonIsQueueOverflow(packetDropped); record=count,sum(packetBytes),vector(packetBytes); interpolationmode=none);
         @statistic[packetDropRetryLimitReached](title="packet drop: retry limit reached"; source=packetDropReasonIsRetryLimitReached(packetDropped); record=count,sum(packetBytes),vector(packetBytes); interpolationmode=none);
         @statistic[packetDropBackoffLimitReached](title="packet drop: backoff limit reached"; source=packetDropReasonIsCongestion(packetDropped); record=count,sum(packetBytes),vector(packetBytes); interpolationmode=none);
+        @statistic[accessDelay](title="access delay from begin to end of CSMA process"; source="transmittedFrameAccessDelay"; record=vector,stats; interpolationmode=none);
     submodules:
         queue: <default("DropTailQueue")> like IPacketQueue {
             parameters:

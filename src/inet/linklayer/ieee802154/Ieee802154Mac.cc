@@ -42,6 +42,8 @@ namespace inet {
 
 using namespace physicallayer;
 
+simsignal_t currentTxFrameAccessDelaySignal = cComponent::registerSignal("transmittedFrameAccessDelay");
+
 Define_Module(Ieee802154Mac);
 
 void Ieee802154Mac::initialize(int stage)
@@ -61,6 +63,7 @@ void Ieee802154Mac::initialize(int stage)
         nbDuplicates = 0;
         nbBackoffs = 0;
         backoffValues = 0;
+        currentTxFrameBeforeCSMAProcessBeginTimeStamp=SIMTIME_MAX;
         macMaxCSMABackoffs = par("macMaxCSMABackoffs");
         macMaxFrameRetries = par("macMaxFrameRetries");
         macAckWaitDuration = par("macAckWaitDuration");
@@ -225,6 +228,7 @@ void Ieee802154Mac::updateStatusIdle(t_mac_event event, cMessage *msg)
                 EV_DETAIL << "(1) FSM State IDLE_1, EV_SEND_REQUEST and [TxBuff avail]: startTimerBackOff -> BACKOFF." << endl;
                 updateMacState(BACKOFF_2);
                 NB = 0;
+                currentTxFrameBeforeCSMAProcessBeginTimeStamp=simTime();
                 //BE = macMinBE;
                 startTimer(TIMER_BACKOFF);
             }
@@ -477,6 +481,7 @@ void Ieee802154Mac::updateStatusTransmitFrame(t_mac_event event, cMessage *msg)
         }
         else {
             EV_DETAIL << ": RadioSetupRx, manageQueue..." << endl;
+            recordAccessDelayStatistic();
             deleteCurrentTxFrame();
             manageQueue();
         }
@@ -497,6 +502,7 @@ void Ieee802154Mac::updateStatusWaitAck(t_mac_event event, cMessage *msg)
                       << " ProcessAck, manageQueue..." << endl;
             if (rxAckTimer->isScheduled())
                 cancelEvent(rxAckTimer);
+            recordAccessDelayStatistic();
             deleteCurrentTxFrame();
             txAttempts = 0;
             delete msg;
@@ -665,6 +671,7 @@ void Ieee802154Mac::manageQueue()
             // initialize counters if we start a new transmission
             // cycle from zero
             NB = 0;
+            currentTxFrameBeforeCSMAProcessBeginTimeStamp=simTime();
             //BE = macMinBE;
         }
         if (!backoffTimer->isScheduled()) {
@@ -910,6 +917,16 @@ void Ieee802154Mac::decapsulate(Packet *packet)
     packet->addTagIfAbsent<DispatchProtocolReq>()->setProtocol(payloadProtocol);
     packet->addTagIfAbsent<PacketProtocolTag>()->setProtocol(payloadProtocol);
 }
+
+void Ieee802154Mac::recordAccessDelayStatistic(){
+        ASSERT(currentTxFrame);
+        ASSERT(currentTxFrameBeforeCSMAProcessBeginTimeStamp < SIMTIME_MAX);
+        double now = SimTime(simTime().inUnit(SIMTIME_MS)).dbl();
+        double lastTimeStamp = SimTime(currentTxFrameBeforeCSMAProcessBeginTimeStamp.inUnit(SIMTIME_MS)).dbl();
+        double currentTxFrameAccessDelay = now - lastTimeStamp;
+        emit(currentTxFrameAccessDelaySignal,currentTxFrameAccessDelay) ;
+        currentTxFrameBeforeCSMAProcessBeginTimeStamp=SIMTIME_MAX;
+    }
 
 } // namespace inet
 

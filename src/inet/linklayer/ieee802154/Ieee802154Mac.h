@@ -122,6 +122,7 @@ class INET_API Ieee802154Mac : public MacProtocolBase, public IMacProtocol
     long nbDuplicates;
     long nbBackoffs;
     double backoffValues;
+    simtime_t currentTxFrameBeforeCSMAProcessBeginTimeStamp;
     /*@}*/
 
     /** @brief MAC states
@@ -311,6 +312,7 @@ class INET_API Ieee802154Mac : public MacProtocolBase, public IMacProtocol
     std::map<MacAddress, unsigned long> SeqNrChild;    //child -> sequence number
 
   private:
+    void recordAccessDelayStatistic() ;
     /** @brief Copy constructor is not allowed.
      */
     Ieee802154Mac(const Ieee802154Mac&);
