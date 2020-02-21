@@ -56,6 +56,7 @@ class INET_API ShortcutRadio : public PhysicalLayerBase, public virtual IRadio
     virtual RadioMode getRadioMode() const override { return radioMode; }
     virtual void setRadioMode(RadioMode radioMode) override { this->radioMode = radioMode; }
     virtual ReceptionState getReceptionState() const override { return RECEPTION_STATE_UNDEFINED; }
+    virtual ReceptionState getReceptionState(const simtime_t startTime, const simtime_t endTime) const {return getReceptionState();}
     virtual TransmissionState getTransmissionState() const override { return transmissionState; }
     virtual int getId() const override { return -1; }
     virtual const IAntenna *getAntenna() const override { return nullptr; }
