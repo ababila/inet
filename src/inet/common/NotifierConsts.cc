@@ -31,7 +31,6 @@ simsignal_t NF_PP_RX_END = cComponent::registerSignal("NF_PP_RX_END");
 simsignal_t NF_TX_ACKED = cComponent::registerSignal("NF_TX_ACKED");
 simsignal_t NF_L2_Q_DROP = cComponent::registerSignal("NF_L2_Q_DROP");
 simsignal_t NF_PACKET_DROP = cComponent::registerSignal("NF_PACKET_DROP");
-simsignal_t NF_MAC_BECAME_IDLE = cComponent::registerSignal("NF_MAC_BECAME_IDLE");
 simsignal_t NF_L2_BEACON_LOST = cComponent::registerSignal("NF_L2_BEACON_LOST");
 simsignal_t NF_L2_ASSOCIATED = cComponent::registerSignal("NF_L2_ASSOCIATED");
 simsignal_t NF_L2_ASSOCIATED_NEWAP = cComponent::registerSignal("NF_L2_ASSOCIATED_NEWAP");
@@ -40,6 +39,7 @@ simsignal_t NF_L2_DISASSOCIATED = cComponent::registerSignal("NF_L2_DISASSOCIATE
 simsignal_t NF_L2_AP_ASSOCIATED = cComponent::registerSignal("NF_L2_AP_ASSOCIATED");
 simsignal_t NF_L2_AP_DISASSOCIATED = cComponent::registerSignal("NF_L2_AP_DISASSOCIATED");
 
+simsignal_t NF_PACKET_ACK_RECEIVED = cComponent::registerSignal("NF_PACKET_ACK_RECEIVED");
 simsignal_t NF_LINK_BREAK = cComponent::registerSignal("NF_LINK_BREAK");
 simsignal_t NF_LINK_PROMISCUOUS = cComponent::registerSignal("NF_LINK_PROMISCUOUS");
 simsignal_t NF_LINK_FULL_PROMISCUOUS = cComponent::registerSignal("NF_LINK_FULL_PROMISCUOUS");

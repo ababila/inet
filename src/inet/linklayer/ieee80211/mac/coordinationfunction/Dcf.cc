@@ -265,6 +265,7 @@ void Dcf::originatorProcessReceivedFrame(Ieee80211Frame* frame, Ieee80211Frame* 
         recoveryProcedure->ackFrameReceived(lastTransmittedDataOrMgmtFrame, stationRetryCounters);
         ackHandler->processReceivedAck(check_and_cast<Ieee80211ACKFrame *>(frame), lastTransmittedDataOrMgmtFrame);
         inProgressFrames->dropFrame(lastTransmittedDataOrMgmtFrame);
+        emit(NF_PACKET_ACK_RECEIVED,lastTransmittedDataOrMgmtFrame);
     }
     else if (frame->getType() == ST_RTS)
         ; // void
