@@ -80,7 +80,7 @@ void Edca::releaseChannelAccess(AccessCategory ac, IChannelAccess::ICallback* ca
 Edca::~Edca()
 {
     for (int i = 0; i < numEdcafs; i++)
-        delete edcafs[i];
+         edcafs[i]->deleteModule();
     delete[] edcafs;
 }
 
